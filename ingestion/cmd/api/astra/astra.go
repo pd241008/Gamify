@@ -4,58 +4,21 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"time"
 
-	gocqlastra "github.com/datastax/gocql-astra"
-	"github.com/gocql/gocql"
+	internalastra "ingestion/internal/astra"
 )
 
-func astra_connection(w http.ResponseWriter, r *http.Request) {
-	var err error
-
-	var cluster *gocql.ClusterConfig
-
-	if len(os.Getenv("ASTRA_DB_APPLICATION_TOKEN")) > 0 {
-		if len(os.Getenv("ASTRA_DB_ID")) == 0 {
-			panic("database ID is required when using a token")
-		}
-	}
-
+func astraconnection(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Creating the cluster now")
-	fmt.Println(os.Getenv("ASTRA_DB_ID"))
-	fmt.Print(os.Getenv("ASTRA_DB_APPLICATION_TOKEN"))
-	fmt.Println(os.Getenv("ASTRA_DB_REGION"))
-	fmt.Println(cluster)
-
-	cluster, err = gocqlastra.NewClusterFromURL("https://api.astra.datastax.com", os.Getenv("ASTRA_DB_ID"), os.Getenv("ASTRA_DB_APPLICATION_TOKEN"), 10*time.Second)
-	fmt.Println(cluster)
-
+	
+	version, elapsed, err := internalastra.ConnectAndQuery()
 	if err != nil {
-		fmt.Errorf("unable to load cluster %s from astra: %v", os.Getenv("ASTRA_DB_APPLICATION_TOKEN"), err)
+		log.Printf("Error connecting to Astra DB: %v", err)
+		http.Error(w, "Database connection failed", http.StatusInternalServerError)
+		return
 	}
 
-	start := time.Now()
-	session, err := gocql.NewSession(*cluster)
-	elapsed := time.Now().Sub(start)
-
-	if err != nil {
-		log.Fatalf("unable to connect session: %v", err)
-	}
-
-	fmt.Println("Making the query now")
-
-	iter := session.Query("SELECT release_version FROM system.local").Iter()
-
-	var version string
-
-	for iter.Scan(&version) {
-		fmt.Println(version)
-	}
-
-	if err = iter.Close(); err != nil {
-		log.Printf("error running query: %v", err)
-	}
-
+	fmt.Println(version)
 	fmt.Printf("Connection process took %s\n", elapsed)
+	fmt.Fprintf(w, "Connected successfully. DB Version: %s", version)
 }
