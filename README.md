@@ -227,3 +227,22 @@ esports-tracker/
 ## License
 
 MIT
+
+
+## 🎯 Project Roadmap
+- [ ] **Phase 1**: Ingestion Pipelines & Frontend Scaffold.
+  - [ ] Set up Go module and directory structure (internal/pkg/cmd)
+  - [ ] Scaffold Next.js frontend with TailwindCSS
+  - [ ] Define environment variables and configuration management
+- [ ] **Phase 2**: Dedicated Monolith Backend Development (Go Ingestion layer).
+  - [ ] Implement Esports API client for polling match data
+  - [ ] Set up Apache Cassandra / Astra DB connection and schema
+  - [ ] Implement Delta detection logic to only save new/updated matches
+  - [ ] Integrate Upstash QStash for message broker/delayed webhook delivery
+- [ ] **Phase 3**: Microservices Integration (Webhook receiver).
+  - [ ] Create Next.js API route to receive QStash webhooks
+  - [ ] Implement Discord and Telegram notification logic
+- [ ] **Phase 4**: Full-Stack Polish (Frontend UI).
+  - [ ] Design and implement Next.js dashboard UI
+  - [ ] Connect dashboard to Cassandra backend to display matches
+  - [ ] Implement dynamic animations and premium visual design
