@@ -2,10 +2,10 @@ package db
 
 import (
 	"fmt"
+	"ingestion/internal/parser"
 	"time"
 
 	"github.com/gocql/gocql"
-	"ingestion/internal/parser"
 )
 
 // FetchExistingMatches queries Cassandra for matches by tournament_id and returns a map keyed by match_id.

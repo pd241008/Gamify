@@ -2,12 +2,10 @@ package broker
 
 import (
 	"fmt"
+	"ingestion/internal/qstash"
 	"log"
 	"time"
-
-	"ingestion/internal/qstash"
 )
-
 
 type MatchNotificationPayload struct {
 	MatchID      string `json:"match_id"`
@@ -19,12 +17,10 @@ type MatchNotificationPayload struct {
 	TeamB        string `json:"team_b,omitempty"`
 }
 
-.
 type Broker struct {
 	client     *qstash.Client
-	webhookURL string 
+	webhookURL string
 }
-
 
 func NewBroker(client *qstash.Client, webhookURL string) (*Broker, error) {
 	if client == nil {
@@ -39,7 +35,6 @@ func NewBroker(client *qstash.Client, webhookURL string) (*Broker, error) {
 		webhookURL: webhookURL,
 	}, nil
 }
-
 
 func (b *Broker) ScheduleMatchNotification(matchStartTime time.Time, payload MatchNotificationPayload) (string, error) {
 	// Calculate the delay: deliver at T-15 minutes before match start.
