@@ -3,60 +3,113 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
+
+	"ingestion/broker"
+	"ingestion/db"
+	"ingestion/internal/astra"
+	"ingestion/internal/config"
+	"ingestion/internal/parser"
+	"ingestion/internal/qstash"
 )
 
-// TODO: Phase 1 - Configuration Management
-// - Implement config loader in `internal/config`
-// - Load ESPORTS_API_KEY, ASTRA_DB_TOKEN, QSTASH_TOKEN, etc.
-
-// TODO: Phase 2 - Persistence Layer Setup
-// - Initialize Cassandra/Astra DB client using `pkg/store`
-// storeClient := store.NewCassandraClient(config)
-
-// TODO: Phase 2 - Messaging Layer Setup
-// - Initialize QStash client using `pkg/broker`
-// brokerClient := broker.NewQStashClient(config)
-
-// TODO: Phase 2 - Esports API Client
-// - Initialize the 3rd party API client using `pkg/esports`
-// esportsClient := esports.NewClient(config)
-
-// TODO: Phase 2 - Core Service Orchestration
-// - Initialize the core orchestration service using `internal/service`
-// - Pass in the store, broker, and esports clients via dependency injection
-// orchestrationService := service.NewIngestionService(esportsClient, storeClient, brokerClient)
-
-// TODO: Start Polling Job
-// - Execute the polling logic to fetch matches, calculate deltas, and publish to QStash
-// err := orchestrationService.Run()
-
-func route(w http.ResponseWriter, r *http.Request) {
-	_, err := fmt.Fprintf(w, "Hello world")
-	if err != nil {
-		// Log the error if we fail to write to the client
-		log.Printf("Error writing response to client: %v\n", err)
-	}
-}
-
-func routes(w http.ResponseWriter, r *http.Request) {
-	_, err := fmt.Fprintf(w, "Welcome To Gamify API Pipeline")
-	if err != nil {
-		log.Printf("Error writing Response to Client: %v\n", err)
-	}
-}
-
 func main() {
-	http.HandleFunc("/", routes)
-	// Explicitly ignoring the error/byte count for stdout
-	_, _ = fmt.Println("Starting Ingestion Gateway...")
-
-	http.HandleFunc("/hello-world", route)
-
-	_, _ = fmt.Println("Ingestion gateway initialized successfully. Listening on port 8888...")
-
-	err := http.ListenAndServe(":8888", nil)
+	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+		log.Fatalf("Failed to load configuration: %v", err)
 	}
+	cfg.PrintRedacted()
+
+	dbSession, err := astra.NewSession(cfg.AstraDBToken, cfg.AstraDBID)
+	if err != nil {
+		log.Fatalf("Failed to connect to Cassandra: %v", err)
+	}
+	defer dbSession.Close()
+
+	if err := db.EnsureSchema(dbSession); err != nil {
+		log.Fatalf("Failed to ensure DB schema: %v", err)
+	}
+	log.Println("✅ Cassandra schema ensured")
+
+	qstashClient, err := qstash.NewClient(cfg.QStashURL, cfg.QStashToken)
+	if err != nil {
+		log.Fatalf("Failed to initialize QStash client: %v", err)
+	}
+
+	matchBroker, err := broker.NewBroker(qstashClient, cfg.WebhookURL)
+	if err != nil {
+		log.Fatalf("Failed to initialize broker: %v", err)
+	}
+	log.Println("✅ QStash broker initialized")
+
+	fetcher := parser.NewFetcher(cfg.EsportsAPIBaseURL, cfg.EsportsAPIKey)
+	esportsClient := parser.NewEsportsParser(fetcher)
+	log.Println("✅ Esports API client initialized")
+
+	log.Println("Starting Ingestion Pipeline...")
+
+	// Fetch upcoming matches
+	upcomingMatches, err := esportsClient.GetUpcomingMatches()
+	if err != nil {
+		log.Printf("⚠️  Error fetching upcoming matches: %v", err)
+	}
+
+	// Fetch running matches
+	runningMatches, err := esportsClient.GetRunningMatches()
+	if err != nil {
+		log.Printf("⚠️  Error fetching running matches: %v", err)
+	}
+
+	allMatches := append(upcomingMatches, runningMatches...)
+	log.Printf("Fetched %d total matches (%d upcoming, %d running)", len(allMatches), len(upcomingMatches), len(runningMatches))
+
+	// Group matches by tournament ID
+	tournamentMatches := make(map[string][]parser.Match)
+	for _, match := range allMatches {
+		tID := fmt.Sprintf("%d", match.TournamentID)
+		tournamentMatches[tID] = append(tournamentMatches[tID], match)
+	}
+
+	// Process each tournament
+	for tID, incoming := range tournamentMatches {
+		existing, err := db.FetchExistingMatches(dbSession, tID)
+		if err != nil {
+			log.Printf("⚠️  Failed to fetch existing matches for tournament %s: %v", tID, err)
+			continue
+		}
+
+		toInsert, toUpdate := db.GetDeltas(existing, incoming)
+		log.Printf("Tournament %s: %d new, %d updated", tID, len(toInsert), len(toUpdate))
+
+		// Process Inserts
+		for _, m := range toInsert {
+			if err := db.SaveMatch(dbSession, m); err != nil {
+				log.Printf("⚠️  Failed to insert match %d: %v", m.ID, err)
+				continue
+			}
+
+			// Schedule QStash notification for new matches
+			payload := broker.MatchNotificationPayload{
+				MatchID:      fmt.Sprintf("%d", m.ID),
+				MatchName:    m.Name,
+				TournamentID: fmt.Sprintf("%d", m.TournamentID),
+				Status:       m.Status,
+				ScheduledAt:  m.ScheduledAt.Format("2006-01-02T15:04:05Z07:00"),
+				TeamA:        m.TeamA,
+				TeamB:        m.TeamB,
+			}
+
+			if _, err := matchBroker.ScheduleMatchNotification(m.ScheduledAt, payload); err != nil {
+				log.Printf("⚠️  Failed to schedule notification for match %d: %v", m.ID, err)
+			}
+		}
+
+		// Process Updates
+		for _, m := range toUpdate {
+			if err := db.UpdateMatch(dbSession, m); err != nil {
+				log.Printf("⚠️  Failed to update match %d: %v", m.ID, err)
+			}
+		}
+	}
+
+	log.Println("✅ Ingestion Pipeline completed successfully.")
 }

@@ -13,7 +13,6 @@ type Fetcher struct {
 	APIKey  string
 }
 
-
 func NewFetcher(baseURL, apiKey string) *Fetcher {
 	return &Fetcher{
 		Client: &http.Client{
@@ -24,7 +23,6 @@ func NewFetcher(baseURL, apiKey string) *Fetcher {
 	}
 }
 
-
 func (f *Fetcher) FetchData(endpoint string, target interface{}) error {
 	url := fmt.Sprintf("%s/%s", f.BaseURL, endpoint)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -33,7 +31,7 @@ func (f *Fetcher) FetchData(endpoint string, target interface{}) error {
 	}
 
 	if f.APIKey != "" {
-	
+
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", f.APIKey))
 	}
 
