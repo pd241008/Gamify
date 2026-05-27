@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log"
-
 	"ingestion/broker"
 	"ingestion/db"
 	"ingestion/internal/astra"
 	"ingestion/internal/config"
 	"ingestion/internal/parser"
 	"ingestion/internal/qstash"
+	"log"
 )
 
 func main() {
