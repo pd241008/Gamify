@@ -2,24 +2,35 @@ package parser
 
 import (
 	"fmt"
+	"time"
 )
 
-// Match represents a basic esports match data structure.
+
 type Match struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	Status      string `json:"status"`
-	ScheduledAt string `json:"scheduled_at"`
-	League      League `json:"league"`
+	ID           int       `json:"id"`
+	TournamentID int       `json:"tournament_id"`
+	Name         string    `json:"name"`
+	Status       string    `json:"status"`
+	ScheduledAt  time.Time `json:"scheduled_at"`
+	Score        string    `json:"score,omitempty"`
+	TeamA        string    `json:"team_a,omitempty"`
+	TeamB        string    `json:"team_b,omitempty"`
+	League       League    `json:"league"`
 }
 
-// League represents the league/tournament the match belongs to.
+
 type League struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
-// EsportsParser orchestrates the fetching and parsing of esports data.
+
+type MatchProvider interface {
+	GetUpcomingMatches() ([]Match, error)
+	GetRunningMatches() ([]Match, error)
+}
+
+
 type EsportsParser struct {
 	fetcher *Fetcher
 }
@@ -34,12 +45,23 @@ func NewEsportsParser(fetcher *Fetcher) *EsportsParser {
 // GetUpcomingMatches fetches upcoming matches from the esports API.
 func (p *EsportsParser) GetUpcomingMatches() ([]Match, error) {
 	var matches []Match
-	
+
 	// Assuming "matches/upcoming" is the standard endpoint for the third-party API.
-	// You may need to adjust this endpoint based on the specific API you are using (e.g. PandaScore).
 	err := p.fetcher.FetchData("matches/upcoming", &matches)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch upcoming matches: %w", err)
+	}
+
+	return matches, nil
+}
+
+
+func (p *EsportsParser) GetRunningMatches() ([]Match, error) {
+	var matches []Match
+
+	err := p.fetcher.FetchData("matches/running", &matches)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch running matches: %w", err)
 	}
 
 	return matches, nil

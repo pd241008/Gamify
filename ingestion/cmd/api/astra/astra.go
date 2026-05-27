@@ -6,19 +6,23 @@ import (
 	"net/http"
 
 	internalastra "ingestion/internal/astra"
+	"ingestion/internal/config"
 )
 
-func astraconnection(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Creating the cluster now")
-	
-	version, elapsed, err := internalastra.ConnectAndQuery()
-	if err != nil {
-		log.Printf("Error connecting to Astra DB: %v", err)
-		http.Error(w, "Database connection failed", http.StatusInternalServerError)
-		return
-	}
+// NewHandler returns an HTTP handler that tests the Astra DB connection.
+// Config is loaded from the centralized config loader — no direct env var access.
+func NewHandler(cfg *config.Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Testing Astra DB connection...")
 
-	fmt.Println(version)
-	fmt.Printf("Connection process took %s\n", elapsed)
-	fmt.Fprintf(w, "Connected successfully. DB Version: %s", version)
+		version, elapsed, err := internalastra.HealthCheck(cfg.AstraDBToken, cfg.AstraDBID)
+		if err != nil {
+			log.Printf("Error connecting to Astra DB: %v", err)
+			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			return
+		}
+
+		log.Printf("Astra DB version: %s (connected in %s)", version, elapsed)
+		fmt.Fprintf(w, "Connected successfully. DB Version: %s", version)
+	}
 }

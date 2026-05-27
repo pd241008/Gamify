@@ -21,12 +21,14 @@ jobs:
         run: |
           cd ingestion
           go mod tidy
-          go run main.go
+          go run ./cmd/ingestion/
         env:
+          ESPORTS_API_BASE_URL: https://api.pandascore.co
           ESPORTS_API_KEY: ${{ secrets.ESPORTS_API_KEY }}
           ASTRA_DB_TOKEN: ${{ secrets.ASTRA_DB_TOKEN }}
-          ASTRA_DB_ENDPOINT: ${{ secrets.ASTRA_DB_ENDPOINT }}
-          ASTRA_KEYSPACE: ${{ secrets.ASTRA_KEYSPACE }}
+          ASTRA_DB_ID: ${{ secrets.ASTRA_DB_ID }}
+          QSTASH_URL: ${{ secrets.QSTASH_URL }}
           QSTASH_TOKEN: ${{ secrets.QSTASH_TOKEN }}
           QSTASH_CURRENT_SIGNING_KEY: ${{ secrets.QSTASH_CURRENT_SIGNING_KEY }}
           QSTASH_NEXT_SIGNING_KEY: ${{ secrets.QSTASH_NEXT_SIGNING_KEY }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
