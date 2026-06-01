@@ -10,12 +10,15 @@ import (
 
 // NewSession creates a reusable Cassandra session connected to Astra DB.
 // The caller is responsible for closing the session when done (via session.Close()).
-func NewSession(token, dbID string) (*gocql.Session, error) {
+func NewSession(token, dbID, keyspace string) (*gocql.Session, error) {
 	if token == "" {
 		return nil, fmt.Errorf("Astra DB token is required")
 	}
 	if dbID == "" {
 		return nil, fmt.Errorf("Astra DB ID is required")
+	}
+	if keyspace == "" {
+		keyspace = "default_keyspace"
 	}
 
 	cluster, err := gocqlastra.NewClusterFromURL(
@@ -27,6 +30,7 @@ func NewSession(token, dbID string) (*gocql.Session, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to configure Astra DB cluster: %w", err)
 	}
+	cluster.Keyspace = keyspace
 
 	session, err := gocql.NewSession(*cluster)
 	if err != nil {
@@ -38,10 +42,10 @@ func NewSession(token, dbID string) (*gocql.Session, error) {
 
 // HealthCheck verifies the Astra DB connection by querying the Cassandra version.
 // Returns the release version string and the time it took to connect + query.
-func HealthCheck(token, dbID string) (string, time.Duration, error) {
+func HealthCheck(token, dbID, keyspace string) (string, time.Duration, error) {
 	start := time.Now()
 
-	session, err := NewSession(token, dbID)
+	session, err := NewSession(token, dbID, keyspace)
 	if err != nil {
 		return "", time.Since(start), err
 	}
