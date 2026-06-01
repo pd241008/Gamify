@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS matches_by_tournament (
     score text,
     team_a text,
     team_b text,
+    team_a_name text,
+    team_b_name text,
     team_a_logo text,
     team_b_logo text,
     PRIMARY KEY ((tournament_id), start_time, match_id)
@@ -37,6 +39,8 @@ func EnsureSchema(session *gocql.Session) error {
 	}
 
 	// Safely attempt to add new columns if table already existed without them
+	_ = session.Query(`ALTER TABLE matches_by_tournament ADD team_a_name text;`).Exec()
+	_ = session.Query(`ALTER TABLE matches_by_tournament ADD team_b_name text;`).Exec()
 	_ = session.Query(`ALTER TABLE matches_by_tournament ADD team_a_logo text;`).Exec()
 	_ = session.Query(`ALTER TABLE matches_by_tournament ADD team_b_logo text;`).Exec()
 
@@ -51,21 +55,30 @@ func FetchMatches(session *gocql.Session, tournamentID string) ([]map[string]int
 
 	var iter *gocql.Iter
 	if tournamentID != "" {
-		query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_logo, team_b_logo FROM matches_by_tournament WHERE tournament_id = ?`
+		query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo FROM matches_by_tournament WHERE tournament_id = ?`
 		iter = session.Query(query, tournamentID).Iter()
 	} else {
 		// LIMIT 50 is used for demonstration, allowing across-partition queries in Astra DB.
-		query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_logo, team_b_logo FROM matches_by_tournament LIMIT 50`
+		query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo FROM matches_by_tournament LIMIT 50`
 		iter = session.Query(query).Iter()
 	}
 
 	var matches []map[string]interface{}
-	var tID, mID, status, score, teamA, teamB, teamALogo, teamBLogo string
+	var tID, mID, status, score, teamA, teamB, teamAName, teamBName, teamALogo, teamBLogo string
 	var startTime time.Time
 
-	for iter.Scan(&tID, &startTime, &mID, &status, &score, &teamA, &teamB, &teamALogo, &teamBLogo) {
-		name := teamA + " vs " + teamB
-		if teamA == "" && teamB == "" {
+	for iter.Scan(&tID, &startTime, &mID, &status, &score, &teamA, &teamB, &teamAName, &teamBName, &teamALogo, &teamBLogo) {
+		displayTeamA := teamAName
+		if displayTeamA == "" {
+			displayTeamA = teamA
+		}
+		displayTeamB := teamBName
+		if displayTeamB == "" {
+			displayTeamB = teamB
+		}
+
+		name := displayTeamA + " vs " + displayTeamB
+		if displayTeamA == "" && displayTeamB == "" {
 			name = "TBD vs TBD"
 		}
 		
@@ -77,11 +90,13 @@ func FetchMatches(session *gocql.Session, tournamentID string) ([]map[string]int
 			"scheduledAt": startTime.Format("2006-01-02T15:04:05Z07:00"),
 			"score":       score,
 			"teamA": map[string]string{
-				"name":    teamA,
+				"id":      teamA,
+				"name":    displayTeamA,
 				"logoUrl": teamALogo,
 			},
 			"teamB": map[string]string{
-				"name":    teamB,
+				"id":      teamB,
+				"name":    displayTeamB,
 				"logoUrl": teamBLogo,
 			},
 		})
