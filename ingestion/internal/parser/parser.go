@@ -15,6 +15,8 @@ type Match struct {
 	Score        string    `json:"score,omitempty"`
 	TeamA        string    `json:"team_a,omitempty"`
 	TeamB        string    `json:"team_b,omitempty"`
+	TeamAName    string    `json:"team_a_name,omitempty"`
+	TeamBName    string    `json:"team_b_name,omitempty"`
 	TeamALogo    string    `json:"team_a_logo,omitempty"`
 	TeamBLogo    string    `json:"team_b_logo,omitempty"`
 	League       League    `json:"league"`
