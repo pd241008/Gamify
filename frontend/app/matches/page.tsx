@@ -2,15 +2,29 @@ import Image from "next/image";
 import Link from "next/link";
 import MatchList from "../components/MatchList";
 import { Match } from "../components/MatchCard";
+import TournamentFilter from "../components/TournamentFilter";
 
-// MatchesPage is now an async Server Component that fetches from the Go Backend API!
-export default async function MatchesPage() {
+export default async function MatchesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const resolvedSearchParams = await searchParams;
+  const tournament = typeof resolvedSearchParams.tournament === 'string' ? resolvedSearchParams.tournament : '';
+  
   let matches: Match[] = [];
+  let tournaments: string[] = [];
   let apiError = false;
 
   try {
-    const res = await fetch("http://localhost:8080/api/matches", {
-      cache: "no-store", // Always fetch the latest data from the backend
+    const params = new URLSearchParams();
+    if (tournament) {
+      params.set('tournament', tournament);
+    }
+    
+    // Fetch matches
+    const res = await fetch(`http://localhost:8080/api/matches?${params.toString()}`, {
+      cache: "no-store",
     });
 
     if (!res.ok) {
@@ -18,6 +32,15 @@ export default async function MatchesPage() {
     }
 
     matches = await res.json();
+    
+    // Fetch tournaments for the filter
+    const tRes = await fetch(`http://localhost:8080/api/tournaments`, {
+      cache: "no-store",
+    });
+    
+    if (tRes.ok) {
+      tournaments = await tRes.json();
+    }
   } catch (error) {
     console.error("Failed to fetch matches from Go API:", error);
     apiError = true;
@@ -78,6 +101,7 @@ export default async function MatchesPage() {
               <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                 Scheduled Events ({matches.length})
               </h2>
+              <TournamentFilter tournaments={tournaments || []} />
             </div>
             <MatchList matches={matches} />
           </section>
