@@ -1,35 +1,38 @@
 import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between p-24">
-      {/* 
-        TODO: Phase 4 - Full-Stack Polish (Frontend UI)
-        - Build out a premium, highly responsive UI.
-        - Connect to backend (Cassandra/API) to fetch and display upcoming matches.
-        - Create and use custom components: <MatchCard />, <BracketView />, etc.
-        - Apply premium styling, dark mode, and micro-animations.
-      */}
-      <main className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm">
-        <h1 className="text-4xl font-bold text-center mb-8">
-          Esports Tracker Dashboard
+    <div className="min-h-screen bg-black text-white selection:bg-purple-500/30 flex flex-col items-center justify-center">
+      <div className="fixed inset-0 z-0">
+        <Image
+          src="/esports_hero_bg_1780292991411.png"
+          alt="Abstract Esports Background"
+          fill
+          className="object-cover opacity-30"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
+      </div>
+
+      <main className="relative z-10 container mx-auto px-6 py-12 flex flex-col items-center text-center">
+        <h1 className="text-6xl md:text-8xl font-extrabold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-400 to-fuchsia-400">
+          Gamify Pipeline
         </h1>
+        <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto mb-12">
+          The ultimate zero-maintenance, serverless pipeline for real-time esports match tracking. Never miss a critical moment again.
+        </p>
         
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <p className="text-lg">
-            This is the base UI. The implementation steps are outlined below.
-          </p>
-          
-          <div className="mt-8 border border-gray-300 rounded-lg p-6 w-full max-w-2xl bg-white dark:bg-black dark:border-gray-800">
-            <h2 className="text-2xl font-semibold mb-4 text-left">Implementation TODOs:</h2>
-            <ul className="list-disc text-left space-y-2 pl-6">
-              <li>TODO: Fetch match data from Cassandra/Backend API</li>
-              <li>TODO: Render list of upcoming matches using custom components</li>
-              <li>TODO: Add real-time updates or state management</li>
-              <li>TODO: Add Discord/Telegram notification settings (if applicable)</li>
-            </ul>
-          </div>
-        </div>
+        <Link 
+          href="/matches" 
+          className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-300 bg-purple-600 rounded-full hover:bg-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/50"
+        >
+          <span className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black" />
+          <span className="relative flex items-center gap-2">
+            Enter Dashboard
+            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+          </span>
+        </Link>
       </main>
     </div>
   );

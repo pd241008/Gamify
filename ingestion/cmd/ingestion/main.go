@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"ingestion/api"
 	"ingestion/broker"
 	"ingestion/db"
 	"ingestion/internal/astra"
@@ -18,7 +19,7 @@ func main() {
 	}
 	cfg.PrintRedacted()
 
-	dbSession, err := astra.NewSession(cfg.AstraDBToken, cfg.AstraDBID)
+	dbSession, err := astra.NewSession(cfg.AstraDBToken, cfg.AstraDBID, cfg.AstraKeyspace)
 	if err != nil {
 		log.Fatalf("Failed to connect to Cassandra: %v", err)
 	}
@@ -110,5 +111,6 @@ func main() {
 		}
 	}
 
-	log.Println("✅ Ingestion Pipeline completed successfully.")
+	log.Println("✅ Ingestion Pipeline completed successfully. Starting HTTP API server...")
+	api.StartServer(dbSession, ":8080")
 }

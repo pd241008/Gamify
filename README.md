@@ -7,7 +7,8 @@
 ![Upstash](https://img.shields.io/badge/Upstash-00E9A3?style=for-the-badge&logo=upstash&logoColor=black)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
-> A zero-maintenance, event-driven pipeline for real-time esports match tracking and pre-match notifications — no always-on servers required.
+> A zero-maintenance, event-driven pipeline for real-time esports match tracking and pre-match notifications — no always-on servers r
+equired.
 
 ---
 

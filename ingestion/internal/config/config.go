@@ -18,8 +18,9 @@ type Config struct {
 	EsportsAPIKey     string
 
 	// Cassandra / DataStax Astra DB
-	AstraDBToken string // Application token for Astra DB authentication
-	AstraDBID    string // Astra DB database ID
+	AstraDBToken  string // Application token for Astra DB authentication
+	AstraDBID     string // Astra DB database ID
+	AstraKeyspace string // Keyspace for Astra DB
 
 	// Upstash QStash
 	QStashURL               string
@@ -66,6 +67,7 @@ func Load() (*Config, error) {
 		EsportsAPIKey:           getEnv("ESPORTS_API_KEY"),
 		AstraDBToken:            getEnv("ASTRA_DB_TOKEN"),
 		AstraDBID:               getEnv("ASTRA_DB_ID"),
+		AstraKeyspace:           getEnv("ASTRA_KEYSPACE"),
 		QStashURL:               getEnv("QSTASH_URL"),
 		QStashToken:             getEnv("QSTASH_TOKEN"),
 		QStashCurrentSigningKey: getEnv("QSTASH_CURRENT_SIGNING_KEY"),

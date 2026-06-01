@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gocql/gocql"
 )
@@ -34,4 +35,47 @@ func EnsureSchema(session *gocql.Session) error {
 	}
 
 	return nil
+}
+
+// FetchAllMatches retrieves up to 50 matches for the frontend API.
+func FetchAllMatches(session *gocql.Session) ([]map[string]interface{}, error) {
+	if session == nil {
+		return nil, fmt.Errorf("cassandra session is nil")
+	}
+
+	// LIMIT 50 is used for demonstration, allowing across-partition queries in Astra DB.
+	query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b FROM matches_by_tournament LIMIT 50`
+	iter := session.Query(query).Iter()
+
+	var matches []map[string]interface{}
+	var tID, mID, status, score, teamA, teamB string
+	var startTime time.Time
+
+	for iter.Scan(&tID, &startTime, &mID, &status, &score, &teamA, &teamB) {
+		name := teamA + " vs " + teamB
+		if teamA == "" && teamB == "" {
+			name = "TBD vs TBD"
+		}
+		
+		matches = append(matches, map[string]interface{}{
+			"id":          mID,
+			"name":        name,
+			"tournament":  "Tournament " + tID, // Prefix for display
+			"status":      status,
+			"scheduledAt": startTime.Format("2006-01-02T15:04:05Z07:00"),
+			"score":       score,
+			"teamA": map[string]string{
+				"name": teamA,
+			},
+			"teamB": map[string]string{
+				"name": teamB,
+			},
+		})
+	}
+
+	if err := iter.Close(); err != nil {
+		return nil, fmt.Errorf("failed to fetch all matches: %w", err)
+	}
+
+	return matches, nil
 }
