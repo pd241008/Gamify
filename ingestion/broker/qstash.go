@@ -15,6 +15,8 @@ type MatchNotificationPayload struct {
 	ScheduledAt  string `json:"scheduled_at"`
 	TeamA        string `json:"team_a,omitempty"`
 	TeamB        string `json:"team_b,omitempty"`
+	TeamALogo    string `json:"team_a_logo,omitempty"`
+	TeamBLogo    string `json:"team_b_logo,omitempty"`
 }
 
 type Broker struct {

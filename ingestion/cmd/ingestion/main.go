@@ -96,6 +96,8 @@ func main() {
 				ScheduledAt:  m.ScheduledAt.Format("2006-01-02T15:04:05Z07:00"),
 				TeamA:        m.TeamA,
 				TeamB:        m.TeamB,
+				TeamALogo:    m.TeamALogo,
+				TeamBLogo:    m.TeamBLogo,
 			}
 
 			if _, err := matchBroker.ScheduleMatchNotification(m.ScheduledAt, payload); err != nil {

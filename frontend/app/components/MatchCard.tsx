@@ -1,3 +1,4 @@
+'use client'
 import Image from "next/image";
 import { useState } from "react";
 
@@ -45,7 +46,7 @@ export default function MatchCard({ match }: { match: Match }) {
   return (
     <div className="relative group overflow-hidden rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md p-6 hover:border-purple-500/50 transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-purple-500/20">
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      
+
       <div className="relative z-10">
         <div className="flex justify-between items-center mb-4">
           <span className="text-xs font-semibold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-2 py-1 rounded-full border border-purple-500/20">
@@ -73,10 +74,10 @@ export default function MatchCard({ match }: { match: Match }) {
         <div className="flex items-center justify-between mb-4 mt-8">
           <div className="flex flex-col items-center flex-1">
             <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-white/5 bg-gray-900 group-hover:border-cyan-400/50 transition-colors duration-300 flex items-center justify-center">
-              <TeamLogo 
-                src={match.teamA.logoUrl} 
-                alt={match.teamA.name} 
-                fallbackSrc="/team_logo_alpha_1780293006977.png" 
+              <TeamLogo
+                src={match.teamA.logoUrl}
+                alt={match.teamA.name}
+                fallbackSrc="/team_logo_alpha_1780293006977.png"
               />
             </div>
             <span className="mt-3 font-bold text-lg text-white text-center">{match.teamA.name}</span>
@@ -89,10 +90,10 @@ export default function MatchCard({ match }: { match: Match }) {
 
           <div className="flex flex-col items-center flex-1">
             <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-white/5 bg-gray-900 group-hover:border-fuchsia-400/50 transition-colors duration-300 flex items-center justify-center">
-              <TeamLogo 
-                src={match.teamB.logoUrl} 
-                alt={match.teamB.name} 
-                fallbackSrc="/team_logo_beta_1780293024477.png" 
+              <TeamLogo
+                src={match.teamB.logoUrl}
+                alt={match.teamB.name}
+                fallbackSrc="/team_logo_beta_1780293024477.png"
               />
             </div>
             <span className="mt-3 font-bold text-lg text-white text-center">{match.teamB.name}</span>

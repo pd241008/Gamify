@@ -240,10 +240,10 @@ MIT
   - [x] Set up Apache Cassandra / Astra DB connection and schema
   - [x] Implement Delta detection logic to only save new/updated matches
   - [x] Integrate Upstash QStash for message broker/delayed webhook delivery
-- [ ] **Phase 3**: Microservices Integration (Webhook receiver).
-  - [ ] Create Next.js API route to receive QStash webhooks
+- [x] **Phase 3**: Microservices Integration (Webhook receiver).
+  - [x] Create Next.js API route to receive QStash webhooks
   - [ ] Implement Discord and Telegram notification logic
-- [ ] **Phase 4**: Full-Stack Polish (Frontend UI).
-  - [ ] Design and implement Next.js dashboard UI
-  - [ ] Connect dashboard to Cassandra backend to display matches
-  - [ ] Implement dynamic animations and premium visual design
+- [x] **Phase 4**: Full-Stack Polish (Frontend UI).
+  - [x] Design and implement Next.js dashboard UI
+  - [x] Connect dashboard to Cassandra backend to display matches
+  - [x] Implement dynamic animations and premium visual design
