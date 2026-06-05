@@ -5,10 +5,10 @@ import (
 	"ingestion/api"
 	"ingestion/broker"
 	"ingestion/db"
-	"ingestion/internal/astra"
 	"ingestion/internal/config"
 	"ingestion/internal/parser"
 	"ingestion/internal/qstash"
+	"ingestion/internal/sync"
 	"log"
 )
 
@@ -19,16 +19,14 @@ func main() {
 	}
 	cfg.PrintRedacted()
 
-	dbSession, err := astra.NewSession(cfg.AstraDBToken, cfg.AstraDBID, cfg.AstraKeyspace)
-	if err != nil {
-		log.Fatalf("Failed to connect to Cassandra: %v", err)
+	syncCfg := sync.Config{
+		AstraDBToken:  cfg.AstraDBToken,
+		AstraDBID:     cfg.AstraDBID,
+		AstraKeyspace: cfg.AstraKeyspace,
+		LocalDBFile:   "local_db.json",
 	}
-	defer dbSession.Close()
 
-	if err := db.EnsureSchema(dbSession); err != nil {
-		log.Fatalf("Failed to ensure DB schema: %v", err)
-	}
-	log.Println("✅ Cassandra schema ensured")
+	syncManager := sync.NewManager(syncCfg)
 
 	qstashClient, err := qstash.NewClient(cfg.QStashURL, cfg.QStashToken)
 	if err != nil {
@@ -69,9 +67,11 @@ func main() {
 		tournamentMatches[tID] = append(tournamentMatches[tID], match)
 	}
 
+	activeStore := syncManager.GetActiveStore()
+
 	// Process each tournament
 	for tID, incoming := range tournamentMatches {
-		existing, err := db.FetchExistingMatches(dbSession, tID)
+		existing, err := activeStore.FetchExistingMatches(tID)
 		if err != nil {
 			log.Printf("⚠️  Failed to fetch existing matches for tournament %s: %v", tID, err)
 			continue
@@ -82,7 +82,7 @@ func main() {
 
 		// Process Inserts
 		for _, m := range toInsert {
-			if err := db.SaveMatch(dbSession, m); err != nil {
+			if err := activeStore.SaveMatch(m); err != nil {
 				log.Printf("⚠️  Failed to insert match %d: %v", m.ID, err)
 				continue
 			}
@@ -109,12 +109,12 @@ func main() {
 
 		// Process Updates
 		for _, m := range toUpdate {
-			if err := db.UpdateMatch(dbSession, m); err != nil {
+			if err := activeStore.UpdateMatch(m); err != nil {
 				log.Printf("⚠️  Failed to update match %d: %v", m.ID, err)
 			}
 		}
 	}
 
 	log.Println("✅ Ingestion Pipeline completed successfully. Starting HTTP API server...")
-	api.StartServer(dbSession, ":8080")
+	api.StartServer(syncManager, ":8080")
 }

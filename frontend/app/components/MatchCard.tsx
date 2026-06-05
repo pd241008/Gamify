@@ -6,6 +6,7 @@ export interface Match {
   id: string;
   name: string;
   tournament: string;
+  videogame: string;
   status: "not_started" | "running" | "finished" | "canceled";
   scheduledAt: string;
   teamA: {
@@ -29,6 +30,8 @@ function TeamLogo({ src, alt, fallbackSrc }: { src?: string; alt: string; fallba
       alt={alt}
       width={80}
       height={80}
+      sizes="(max-width: 768px) 80px, 80px"
+      loading="lazy"
       className="object-cover w-full h-full"
       onError={() => setError(true)}
     />
@@ -49,9 +52,16 @@ export default function MatchCard({ match }: { match: Match }) {
 
       <div className="relative z-10">
         <div className="flex justify-between items-center mb-4">
-          <span className="text-xs font-semibold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-2 py-1 rounded-full border border-purple-500/20">
-            {match.tournament}
-          </span>
+          <div className="flex gap-2 items-center">
+            {match.videogame && (
+              <span className="text-xs font-bold uppercase tracking-widest text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded-md border border-cyan-500/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]">
+                {match.videogame}
+              </span>
+            )}
+            <span className="text-xs font-semibold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-2 py-1 rounded-md border border-purple-500/20">
+              {match.tournament}
+            </span>
+          </div>
           <span className="text-sm text-gray-400 flex items-center gap-2">
             <svg
               className="w-4 h-4"
@@ -67,7 +77,9 @@ export default function MatchCard({ match }: { match: Match }) {
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            {dateString} • {timeString}
+            <time suppressHydrationWarning dateTime={match.scheduledAt}>
+              {dateString} • {timeString}
+            </time>
           </span>
         </div>
 
