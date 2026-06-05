@@ -30,8 +30,6 @@ func (c *CassandraStore) FetchExistingMatches(tournamentID string) (map[string]p
 			TeamBName:   teamBName,
 			TeamALogo:   teamALogo,
 			TeamBLogo:   teamBLogo,
-			Videogame:   videogame,
-			League:      parser.League{Name: leagueName},
 		}
 	}
 

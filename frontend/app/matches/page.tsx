@@ -4,6 +4,8 @@ import MatchList from "../components/MatchList";
 import { Match } from "../components/MatchCard";
 import TournamentFilter from "../components/TournamentFilter";
 import GameTabs from "../components/GameTabs";
+import { currentUser } from '@clerk/nextjs/server';
+import { redirect } from "next/navigation";
 
 export default async function MatchesPage({
   searchParams,
@@ -13,7 +15,16 @@ export default async function MatchesPage({
   const resolvedSearchParams = await searchParams;
   const tournament = typeof resolvedSearchParams.tournament === 'string' ? resolvedSearchParams.tournament : '';
   const game = typeof resolvedSearchParams.game === 'string' ? resolvedSearchParams.game : '';
-  
+
+  const user = await currentUser();
+  if (!user) {
+    redirect("/"); // Or sign-in
+  }
+
+  // Get user's followed games from Clerk metadata
+  const userMetadata = user.publicMetadata as { games?: string[] };
+  const followedGames = userMetadata.games || [];
+
   let matches: Match[] = [];
   let tournaments: { id: string, name: string }[] = [];
 
@@ -22,7 +33,7 @@ export default async function MatchesPage({
     if (tournament) {
       params.set('tournament', tournament);
     }
-    
+
     // Fetch matches
     const res = await fetch(`http://localhost:8080/api/matches?${params.toString()}`, {
       cache: "no-store",
@@ -33,12 +44,12 @@ export default async function MatchesPage({
     }
 
     matches = await res.json();
-    
+
     // Fetch tournaments for the filter
     const tRes = await fetch(`http://localhost:8080/api/tournaments`, {
       cache: "no-store",
     });
-    
+
     if (tRes.ok) {
       tournaments = await tRes.json();
     }
@@ -47,13 +58,19 @@ export default async function MatchesPage({
     throw error; // This will trigger the custom error.tsx boundary
   }
 
-  // Extract unique games
+  // Extract unique games from the fetched matches
   const uniqueGames = Array.from(new Set(matches.map(m => m.videogame).filter(Boolean)));
 
-  // Filter matches based on selected game category
-  const filteredMatches = game 
-    ? matches.filter(m => m.videogame === game) 
-    : matches;
+  // Filter matches based on user's followed games
+  let filteredMatches = matches;
+  if (followedGames.length > 0) {
+    filteredMatches = filteredMatches.filter(m => followedGames.includes(m.videogame));
+  }
+
+  // Further filter matches based on selected game category from URL
+  filteredMatches = game
+    ? filteredMatches.filter(m => m.videogame === game)
+    : filteredMatches;
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-purple-500/30">
@@ -68,19 +85,7 @@ export default async function MatchesPage({
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/80 to-black" />
       </div>
 
-      <nav className="relative z-20 border-b border-white/10 bg-black/50 backdrop-blur-md">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold tracking-wider text-purple-400 hover:text-purple-300 transition-colors">
-            GAMIFY
-          </Link>
-          <div className="text-sm flex items-center gap-2 font-medium">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-green-400">Live (Astra DB)</span>
-          </div>
-        </div>
-      </nav>
-
-      <main className="relative z-10 container mx-auto px-6 py-12">
+      <main className="relative z-10 container mx-auto px-6 py-24">
         <header className="flex flex-col py-10">
           <div className="inline-block self-start mb-4 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-400 text-sm font-semibold tracking-wider">
             LIVE & UPCOMING

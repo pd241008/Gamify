@@ -19,6 +19,7 @@ type MatchNotificationPayload struct {
 	TeamBName    string `json:"team_b_name,omitempty"`
 	TeamALogo    string `json:"team_a_logo,omitempty"`
 	TeamBLogo    string `json:"team_b_logo,omitempty"`
+	Videogame    string `json:"videogame"`
 }
 
 type Broker struct {

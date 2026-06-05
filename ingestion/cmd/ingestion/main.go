@@ -101,6 +101,7 @@ func main() {
 				TeamBName:    m.TeamBName,
 				TeamALogo:    m.TeamALogo,
 				TeamBLogo:    m.TeamBLogo,
+				Videogame:    m.Videogame,
 			}
 
 			if !strings.Contains(cfg.WebhookURL, "localhost") {
