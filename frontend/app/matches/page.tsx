@@ -1,9 +1,9 @@
-import Image from "next/image";
-import Link from "next/link";
 import MatchList from "../components/MatchList";
 import { Match } from "../components/MatchCard";
 import TournamentFilter from "../components/TournamentFilter";
 import GameTabs from "../components/GameTabs";
+import GameBackground from "../components/GameBackground";
+import GameFollowBanner from "../components/GameFollowBanner";
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from "next/navigation";
 
@@ -80,16 +80,7 @@ export default async function MatchesPage({
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-purple-500/30">
-      <div className="fixed inset-0 z-0">
-        <Image
-          src="/esports_hero_bg_1780292991411.png"
-          alt="Abstract Esports Background"
-          fill
-          className="object-cover opacity-20"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/80 to-black" />
-      </div>
+      <GameBackground />
 
       <main className="relative z-10 container mx-auto px-6 py-24">
         <header className="flex flex-col py-10">
@@ -100,6 +91,9 @@ export default async function MatchesPage({
             Match Dashboard
           </h1>
         </header>
+
+        {/* Show banner if user hasn't selected any games to follow */}
+        {followedGames.length === 0 && <GameFollowBanner />}
 
         <section className="mb-20">
           <GameTabs games={uniqueGames} />
