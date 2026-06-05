@@ -48,7 +48,7 @@ var required = []string{
 // then reads all required env vars. Returns an error if any required var is missing.
 func Load() (*Config, error) {
 	
-	loadEnvFile("../../.env") 
+	loadEnvFile("../.env") 
 	loadEnvFile(".env")       
 
 	

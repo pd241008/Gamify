@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
-export default function TournamentFilter({ tournaments }: { tournaments: string[] }) {
+export default function TournamentFilter({ tournaments }: { tournaments: { id: string, name: string }[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentTournament = searchParams.get('tournament') || '';
@@ -38,7 +38,9 @@ export default function TournamentFilter({ tournaments }: { tournaments: string[
           aria-expanded={isOpen}
           aria-haspopup="true"
         >
-          {currentTournament ? `Tournament ${currentTournament}` : 'All Tournaments'}
+          {currentTournament 
+            ? tournaments.find(t => t.id === currentTournament)?.name || `Tournament ${currentTournament}`
+            : 'All Tournaments'}
           <svg
             className="-mr-1 h-5 w-5 text-purple-400"
             viewBox="0 0 20 20"
@@ -72,16 +74,16 @@ export default function TournamentFilter({ tournaments }: { tournaments: string[
             >
               All Tournaments
             </button>
-            {tournaments.map((tId) => (
+            {tournaments.map((t) => (
               <button
-                key={tId}
-                onClick={() => handleSelect(tId)}
+                key={t.id}
+                onClick={() => handleSelect(t.id)}
                 className={`block w-full text-left px-4 py-2 text-sm ${
-                  currentTournament === tId ? 'bg-purple-500/20 text-white' : 'text-gray-300 hover:bg-purple-500/10 hover:text-white'
+                  currentTournament === t.id ? 'bg-purple-500/20 text-white' : 'text-gray-300 hover:bg-purple-500/10 hover:text-white'
                 }`}
                 role="menuitem"
               >
-                Tournament {tId}
+                {t.name}
               </button>
             ))}
           </div>

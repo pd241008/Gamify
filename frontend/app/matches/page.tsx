@@ -3,6 +3,7 @@ import Link from "next/link";
 import MatchList from "../components/MatchList";
 import { Match } from "../components/MatchCard";
 import TournamentFilter from "../components/TournamentFilter";
+import GameTabs from "../components/GameTabs";
 
 export default async function MatchesPage({
   searchParams,
@@ -11,10 +12,10 @@ export default async function MatchesPage({
 }) {
   const resolvedSearchParams = await searchParams;
   const tournament = typeof resolvedSearchParams.tournament === 'string' ? resolvedSearchParams.tournament : '';
+  const game = typeof resolvedSearchParams.game === 'string' ? resolvedSearchParams.game : '';
   
   let matches: Match[] = [];
-  let tournaments: string[] = [];
-  let apiError = false;
+  let tournaments: { id: string, name: string }[] = [];
 
   try {
     const params = new URLSearchParams();
@@ -43,8 +44,16 @@ export default async function MatchesPage({
     }
   } catch (error) {
     console.error("Failed to fetch matches from Go API:", error);
-    apiError = true;
+    throw error; // This will trigger the custom error.tsx boundary
   }
+
+  // Extract unique games
+  const uniqueGames = Array.from(new Set(matches.map(m => m.videogame).filter(Boolean)));
+
+  // Filter matches based on selected game category
+  const filteredMatches = game 
+    ? matches.filter(m => m.videogame === game) 
+    : matches;
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-purple-500/30">
@@ -65,17 +74,8 @@ export default async function MatchesPage({
             GAMIFY
           </Link>
           <div className="text-sm flex items-center gap-2 font-medium">
-            {apiError ? (
-              <>
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-red-400">Backend Disconnected</span>
-              </>
-            ) : (
-              <>
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-green-400">Live (Astra DB)</span>
-              </>
-            )}
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-green-400">Live (Astra DB)</span>
           </div>
         </div>
       </nav>
@@ -88,24 +88,18 @@ export default async function MatchesPage({
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
             Match Dashboard
           </h1>
-          {apiError && (
-            <p className="text-red-400 mb-8 max-w-2xl">
-              Unable to connect to the Go backend API at localhost:8080. Please ensure the pipeline is running (`make run-local`).
-            </p>
-          )}
         </header>
 
-        {!apiError && (
-          <section className="mb-20">
-            <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                Scheduled Events ({matches.length})
-              </h2>
-              <TournamentFilter tournaments={tournaments || []} />
-            </div>
-            <MatchList matches={matches} />
-          </section>
-        )}
+        <section className="mb-20">
+          <GameTabs games={uniqueGames} />
+          <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+              Scheduled Events ({filteredMatches.length})
+            </h2>
+            <TournamentFilter tournaments={tournaments || []} />
+          </div>
+          <MatchList matches={filteredMatches} />
+        </section>
       </main>
     </div>
   );

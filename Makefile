@@ -10,6 +10,10 @@ run: build
 	@echo "Running ingestion service..."
 	$(MAKE) -C ingestion run
 
+dev:
+	@echo "Starting backend and frontend together..."
+	npx concurrently -k -n "backend,frontend" -c "green,blue" "make -C ingestion run" "npm --prefix frontend run dev"
+
 test:
 	@echo "Running tests..."
 	$(MAKE) -C ingestion test

@@ -5,13 +5,11 @@ import (
 	"log"
 	"net/http"
 
-	"ingestion/db"
-
-	"github.com/gocql/gocql"
+	"ingestion/internal/sync"
 )
 
 // StartServer begins the HTTP server to serve matches to the frontend.
-func StartServer(session *gocql.Session, addr string) {
+func StartServer(manager *sync.Manager, addr string) {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/matches", func(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +30,8 @@ func StartServer(session *gocql.Session, addr string) {
 
 		tournamentID := r.URL.Query().Get("tournament")
 
-		matches, err := db.FetchMatches(session, tournamentID)
+		activeStore := manager.GetActiveStore()
+		matches, err := activeStore.FetchMatches(tournamentID)
 		if err != nil {
 			log.Printf("Error fetching matches: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -60,7 +59,8 @@ func StartServer(session *gocql.Session, addr string) {
 			return
 		}
 
-		tournaments, err := db.FetchTournaments(session)
+		activeStore := manager.GetActiveStore()
+		tournaments, err := activeStore.FetchTournaments()
 		if err != nil {
 			log.Printf("Error fetching tournaments: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
