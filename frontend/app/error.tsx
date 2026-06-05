@@ -49,11 +49,11 @@ export default function Error({
               />
             </svg>
           </div>
-          
+
           <h2 className="text-3xl font-extrabold tracking-tight mb-4 text-white">
             Connection Lost
           </h2>
-          
+
           <p className="text-gray-400 mb-8">
             {error.message || "We couldn't connect to the backend services. The pipeline may not be running."}
           </p>

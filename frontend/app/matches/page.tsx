@@ -24,7 +24,7 @@ export default async function MatchesPage({
   // Get user's followed games from Clerk metadata
   const userMetadata = user.publicMetadata as { games?: string[] };
   const followedGames = userMetadata.games || [];
-  
+
   let matches: Match[] = [];
   let tournaments: { id: string, name: string }[] = [];
 
@@ -33,7 +33,7 @@ export default async function MatchesPage({
     if (tournament) {
       params.set('tournament', tournament);
     }
-    
+
     // Fetch matches
     const res = await fetch(`http://localhost:8080/api/matches?${params.toString()}`, {
       cache: "no-store",
@@ -44,12 +44,12 @@ export default async function MatchesPage({
     }
 
     matches = await res.json();
-    
+
     // Fetch tournaments for the filter
     const tRes = await fetch(`http://localhost:8080/api/tournaments`, {
       cache: "no-store",
     });
-    
+
     if (tRes.ok) {
       tournaments = await tRes.json();
     }
@@ -68,8 +68,8 @@ export default async function MatchesPage({
   }
 
   // Further filter matches based on selected game category from URL
-  filteredMatches = game 
-    ? filteredMatches.filter(m => m.videogame === game) 
+  filteredMatches = game
+    ? filteredMatches.filter(m => m.videogame === game)
     : filteredMatches;
 
   return (
