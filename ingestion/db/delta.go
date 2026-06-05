@@ -30,6 +30,10 @@ func (c *CassandraStore) FetchExistingMatches(tournamentID string) (map[string]p
 			TeamBName:   teamBName,
 			TeamALogo:   teamALogo,
 			TeamBLogo:   teamBLogo,
+			Videogame:   videogame,
+			League: parser.League{
+				Name: leagueName,
+			},
 		}
 	}
 
@@ -49,21 +53,7 @@ func GetDeltas(existing map[string]parser.Match, incoming []parser.Match) ([]par
 		mID := fmt.Sprintf("%d", match.ID)
 		if existingMatch, exists := existing[mID]; exists {
 			// Compare relevant fields to detect an update
-			needsUpdate := existingMatch.Status != match.Status || existingMatch.Score != match.Score
-			
-			if !needsUpdate {
-				if existingMatch.TeamAName == "" && match.TeamAName != "" {
-					needsUpdate = true
-				} else if existingMatch.TeamBName == "" && match.TeamBName != "" {
-					needsUpdate = true
-				} else if existingMatch.Videogame == "" && match.Videogame != "" {
-					needsUpdate = true
-				} else if existingMatch.League.Name == "" && match.League.Name != "" {
-					needsUpdate = true
-				}
-			}
-
-			if needsUpdate {
+			if existingMatch.Status != match.Status || existingMatch.Score != match.Score {
 				toUpdate = append(toUpdate, match)
 			}
 		} else {
