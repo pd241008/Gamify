@@ -34,8 +34,14 @@ export default async function MatchesPage({
       params.set('tournament', tournament);
     }
 
+    // Determine API Base URL
+    const baseUrl = process.env.API_BASE_URL;
+    if (!baseUrl) {
+      throw new Error("API_BASE_URL is not configured");
+    }
+
     // Fetch matches
-    const res = await fetch(`http://localhost:8080/api/matches?${params.toString()}`, {
+    const res = await fetch(`${baseUrl}/api/matches?${params.toString()}`, {
       cache: "no-store",
     });
 
@@ -46,7 +52,7 @@ export default async function MatchesPage({
     matches = await res.json();
 
     // Fetch tournaments for the filter
-    const tRes = await fetch(`http://localhost:8080/api/tournaments`, {
+    const tRes = await fetch(`${baseUrl}/api/tournaments`, {
       cache: "no-store",
     });
 

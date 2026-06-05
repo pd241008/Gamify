@@ -15,7 +15,7 @@ func NewHandler(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Testing Astra DB connection...")
 
-		version, elapsed, err := internalastra.HealthCheck(cfg.AstraDBToken, cfg.AstraDBID)
+		version, elapsed, err := internalastra.HealthCheck(cfg.AstraDBToken, cfg.AstraDBID, cfg.AstraKeyspace)
 		if err != nil {
 			log.Printf("Error connecting to Astra DB: %v", err)
 			http.Error(w, "Database connection failed", http.StatusInternalServerError)
