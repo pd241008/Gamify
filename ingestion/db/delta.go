@@ -13,13 +13,13 @@ func (c *CassandraStore) FetchExistingMatches(tournamentID string) (map[string]p
 	}
 
 	matches := make(map[string]parser.Match)
-	query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo, videogame, league_name FROM matches_by_tournament WHERE tournament_id = ?`
+	query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo FROM matches_by_tournament WHERE tournament_id = ?`
 
-	iter := c.session.Query(query, tournamentID).Iter()
-	var tID, mID, status, score, teamA, teamB, teamAName, teamBName, teamALogo, teamBLogo, videogame, leagueName string
+	iter := session.Query(query, tournamentID).Iter()
+	var tID, mID, status, score, teamA, teamB, teamAName, teamBName, teamALogo, teamBLogo string
 	var startTime time.Time
 
-	for iter.Scan(&tID, &startTime, &mID, &status, &score, &teamA, &teamB, &teamAName, &teamBName, &teamALogo, &teamBLogo, &videogame, &leagueName) {
+	for iter.Scan(&tID, &startTime, &mID, &status, &score, &teamA, &teamB, &teamAName, &teamBName, &teamALogo, &teamBLogo) {
 		matches[mID] = parser.Match{
 			Status:      status,
 			ScheduledAt: startTime,
@@ -30,8 +30,6 @@ func (c *CassandraStore) FetchExistingMatches(tournamentID string) (map[string]p
 			TeamBName:   teamBName,
 			TeamALogo:   teamALogo,
 			TeamBLogo:   teamBLogo,
-			Videogame:   videogame,
-			League:      parser.League{Name: leagueName},
 		}
 	}
 
@@ -51,21 +49,7 @@ func GetDeltas(existing map[string]parser.Match, incoming []parser.Match) ([]par
 		mID := fmt.Sprintf("%d", match.ID)
 		if existingMatch, exists := existing[mID]; exists {
 			// Compare relevant fields to detect an update
-			needsUpdate := existingMatch.Status != match.Status || existingMatch.Score != match.Score
-			
-			if !needsUpdate {
-				if existingMatch.TeamAName == "" && match.TeamAName != "" {
-					needsUpdate = true
-				} else if existingMatch.TeamBName == "" && match.TeamBName != "" {
-					needsUpdate = true
-				} else if existingMatch.Videogame == "" && match.Videogame != "" {
-					needsUpdate = true
-				} else if existingMatch.League.Name == "" && match.League.Name != "" {
-					needsUpdate = true
-				}
-			}
-
-			if needsUpdate {
+			if existingMatch.Status != match.Status || existingMatch.Score != match.Score {
 				toUpdate = append(toUpdate, match)
 			}
 		} else {
@@ -83,13 +67,13 @@ func (c *CassandraStore) SaveMatch(match parser.Match) error {
 	}
 
 	query := `
-		INSERT INTO matches_by_tournament (tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo, videogame, league_name)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO matches_by_tournament (tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	tID := fmt.Sprintf("%d", match.TournamentID)
 	mID := fmt.Sprintf("%d", match.ID)
 
-	return c.session.Query(query, tID, match.ScheduledAt, mID, match.Status, match.Score, match.TeamA, match.TeamB, match.TeamAName, match.TeamBName, match.TeamALogo, match.TeamBLogo, match.Videogame, match.League.Name).Exec()
+	return session.Query(query, tID, match.ScheduledAt, mID, match.Status, match.Score, match.TeamA, match.TeamB, match.TeamAName, match.TeamBName, match.TeamALogo, match.TeamBLogo).Exec()
 }
 
 // UpdateMatch updates an existing match in the Cassandra database.
@@ -101,11 +85,11 @@ func (c *CassandraStore) UpdateMatch(match parser.Match) error {
 	// In Cassandra, an UPDATE or INSERT with the same primary key acts as an upsert.
 	query := `
 		UPDATE matches_by_tournament 
-		SET status = ?, score = ?, team_a = ?, team_b = ?, team_a_name = ?, team_b_name = ?, team_a_logo = ?, team_b_logo = ?, videogame = ?, league_name = ?
+		SET status = ?, score = ?, team_a = ?, team_b = ?, team_a_name = ?, team_b_name = ?, team_a_logo = ?, team_b_logo = ?
 		WHERE tournament_id = ? AND start_time = ? AND match_id = ?
 	`
 	tID := fmt.Sprintf("%d", match.TournamentID)
 	mID := fmt.Sprintf("%d", match.ID)
 
-	return c.session.Query(query, match.Status, match.Score, match.TeamA, match.TeamB, match.TeamAName, match.TeamBName, match.TeamALogo, match.TeamBLogo, match.Videogame, match.League.Name, tID, match.ScheduledAt, mID).Exec()
+	return session.Query(query, match.Status, match.Score, match.TeamA, match.TeamB, match.TeamAName, match.TeamBName, match.TeamALogo, match.TeamBLogo, tID, match.ScheduledAt, mID).Exec()
 }

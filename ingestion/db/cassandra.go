@@ -47,12 +47,33 @@ func (c *CassandraStore) Close() error {
 	return nil
 }
 
+// CassandraStore implements the Store interface for Astra DB.
+type CassandraStore struct {
+	session *gocql.Session
+}
+
+// NewCassandraStore creates a new CassandraStore.
+func NewCassandraStore(session *gocql.Session) *CassandraStore {
+	return &CassandraStore{session: session}
+}
+
+// Close closes the underlying Cassandra session.
+func (c *CassandraStore) Close() error {
+	if c.session != nil {
+		c.session.Close()
+	}
+	return nil
+}
+
 // EnsureSchema creates the matches_by_tournament table if it does not already exist.
+func (c *CassandraStore) EnsureSchema() error {
+	if c.session == nil {
 func (c *CassandraStore) EnsureSchema() error {
 	if c.session == nil {
 		return fmt.Errorf("cassandra session is nil")
 	}
 
+	if err := c.session.Query(createMatchesTableCQL).Exec(); err != nil {
 	if err := c.session.Query(createMatchesTableCQL).Exec(); err != nil {
 		return fmt.Errorf("failed to create matches_by_tournament table: %w", err)
 	}
@@ -69,6 +90,8 @@ func (c *CassandraStore) EnsureSchema() error {
 }
 
 // FetchMatches retrieves matches for the frontend API, optionally filtering by tournament.
+func (c *CassandraStore) FetchMatches(tournamentID string) ([]map[string]interface{}, error) {
+	if c.session == nil {
 func (c *CassandraStore) FetchMatches(tournamentID string) ([]map[string]interface{}, error) {
 	if c.session == nil {
 		return nil, fmt.Errorf("cassandra session is nil")
@@ -132,6 +155,8 @@ func (c *CassandraStore) FetchMatches(tournamentID string) ([]map[string]interfa
 // FetchTournaments retrieves a list of distinct tournament IDs.
 func (c *CassandraStore) FetchTournaments() ([]map[string]string, error) {
 	if c.session == nil {
+func (c *CassandraStore) FetchTournaments() ([]map[string]string, error) {
+	if c.session == nil {
 		return nil, fmt.Errorf("cassandra session is nil")
 	}
 
@@ -140,7 +165,9 @@ func (c *CassandraStore) FetchTournaments() ([]map[string]string, error) {
 	// This is slightly inefficient but perfectly fine for a demo/mock DB.
 	query := `SELECT DISTINCT tournament_id FROM matches_by_tournament`
 	iter := c.session.Query(query).Iter()
+	iter := c.session.Query(query).Iter()
 
+	var tournaments []map[string]string
 	var tournaments []map[string]string
 	var tID string
 	
