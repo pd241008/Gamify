@@ -4,20 +4,20 @@ import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-// Map game names (as they appear in the API data) to background images
+// Map game names (as they appear in the API data) to background images (WebP for performance)
 const GAME_BACKGROUNDS: Record<string, string> = {
-  'Counter-Strike': '/bg_counter_strike.png',
-  'CS2': '/bg_counter_strike.png',
-  'CS:GO': '/bg_counter_strike.png',
-  'Dota 2': '/bg_dota2.png',
-  'Valorant': '/bg_valorant.png',
-  'League of Legends': '/bg_league_of_legends.png',
-  'LoL': '/bg_league_of_legends.png',
-  'Rainbow 6 Siege': '/bg_rainbow6.png',
-  'R6 Siege': '/bg_rainbow6.png',
+  'Counter-Strike': '/bg_counter_strike.webp',
+  'CS2': '/bg_counter_strike.webp',
+  'CS:GO': '/bg_counter_strike.webp',
+  'Dota 2': '/bg_dota2.webp',
+  'Valorant': '/bg_valorant.webp',
+  'League of Legends': '/bg_league_of_legends.webp',
+  'LoL': '/bg_league_of_legends.webp',
+  'Rainbow 6 Siege': '/bg_rainbow6.webp',
+  'R6 Siege': '/bg_rainbow6.webp',
 };
 
-const DEFAULT_BG = '/bg_gaming_hero.png';
+const DEFAULT_BG = '/bg_gaming_hero.webp';
 
 export default function GameBackground() {
   const searchParams = useSearchParams();
@@ -30,16 +30,19 @@ export default function GameBackground() {
     const newBg = GAME_BACKGROUNDS[currentGame] || DEFAULT_BG;
 
     if (newBg !== currentBg) {
-      setNextBg(newBg);
-      setTransitioning(true);
+      // Preload the next image before transitioning
+      const img = new window.Image();
+      img.src = newBg;
+      img.onload = () => {
+        setNextBg(newBg);
+        setTransitioning(true);
 
-      const timer = setTimeout(() => {
-        setCurrentBg(newBg);
-        setNextBg('');
-        setTransitioning(false);
-      }, 700); // Match the CSS transition duration
-
-      return () => clearTimeout(timer);
+        setTimeout(() => {
+          setCurrentBg(newBg);
+          setNextBg('');
+          setTransitioning(false);
+        }, 700);
+      };
     }
   }, [currentGame, currentBg]);
 
@@ -50,7 +53,7 @@ export default function GameBackground() {
         src={currentBg}
         alt=""
         fill
-        className="object-cover opacity-20 transition-opacity duration-700"
+        className="object-cover transition-opacity duration-700"
         style={{ opacity: transitioning ? 0 : 0.2 }}
         priority
         sizes="100vw"
