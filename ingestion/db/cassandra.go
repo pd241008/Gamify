@@ -13,7 +13,7 @@ import (
 const createMatchesTableCQL = `
 CREATE TABLE IF NOT EXISTS matches_by_tournament (
     tournament_id text,
-    scheduled_at timestamp,
+    start_time timestamp,
     match_id text,
     status text,
     score text,
@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS matches_by_tournament (
     team_a_logo text,
     team_b_logo text,
     videogame text,
-    PRIMARY KEY (tournament_id, scheduled_at, match_id)
-) WITH CLUSTERING ORDER BY (scheduled_at ASC);
+    PRIMARY KEY (tournament_id, start_time, match_id)
+) WITH CLUSTERING ORDER BY (start_time ASC);
 `
 
 // CassandraStore implements the Store interface for Astra DB.
@@ -74,11 +74,11 @@ func (c *CassandraStore) FetchMatches(tournamentID string) ([]map[string]interfa
 
 	var iter *gocql.Iter
 	if tournamentID != "" {
-		query := `SELECT tournament_id, scheduled_at, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo, videogame FROM matches_by_tournament WHERE tournament_id = ?`
+		query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo, videogame FROM matches_by_tournament WHERE tournament_id = ?`
 		iter = c.session.Query(query, tournamentID).Iter()
 	} else {
 		// LIMIT 50 is used for demonstration, allowing across-partition queries in Astra DB.
-		query := `SELECT tournament_id, scheduled_at, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo, videogame FROM matches_by_tournament LIMIT 50`
+		query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo, videogame FROM matches_by_tournament LIMIT 50`
 		iter = c.session.Query(query).Iter()
 	}
 

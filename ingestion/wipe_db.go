@@ -19,9 +19,9 @@ func main() {
 	}
 	defer session.Close()
 
-	if err := session.Query("TRUNCATE matches_by_tournament").Exec(); err != nil {
-		log.Fatalf("Failed to truncate table: %v", err)
+	if err := session.Query("DROP TABLE IF EXISTS matches_by_tournament").Exec(); err != nil {
+		log.Fatalf("Failed to drop table: %v", err)
 	}
 
-	fmt.Println("Successfully truncated matches_by_tournament in Astra DB.")
+	fmt.Println("Successfully dropped table matches_by_tournament in Astra DB.")
 }
