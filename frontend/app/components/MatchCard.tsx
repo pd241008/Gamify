@@ -1,6 +1,6 @@
 'use client'
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export interface Match {
   id: string;
@@ -38,17 +38,49 @@ function TeamLogo({ src, alt, fallbackSrc }: { src?: string; alt: string; fallba
   );
 }
 
-export default function MatchCard({ match }: { match: Match }) {
+// Check if a reminder exists for a match (localStorage)
+function useHasReminder(matchId: string): boolean {
+  const [has, setHas] = useState(false);
+  useEffect(() => {
+    setHas(localStorage.getItem(`gamify_reminder_${matchId}`) !== null);
+  }, [matchId]);
+  return has;
+}
+
+interface MatchCardProps {
+  match: Match;
+  onClick?: (match: Match) => void;
+}
+
+export default function MatchCard({ match, onClick }: MatchCardProps) {
   const date = new Date(match.scheduledAt);
   const timeString = date.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
   });
   const dateString = date.toLocaleDateString();
+  const reminderSet = useHasReminder(match.id);
 
   return (
-    <div className="relative group overflow-hidden rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md p-6 hover:border-purple-500/50 transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-purple-500/20">
+    <div
+      onClick={() => onClick?.(match)}
+      className="relative group overflow-hidden rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md p-6 hover:border-purple-500/50 transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-purple-500/20 cursor-pointer"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(match); }}
+      aria-label={`${match.teamA.name} vs ${match.teamB.name} — click for details`}
+    >
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+      {/* Reminder indicator */}
+      {reminderSet && (
+        <div className="absolute top-3 right-3 z-20 flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-500/15 border border-yellow-500/30">
+          <svg className="w-3.5 h-3.5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Reminder</span>
+        </div>
+      )}
 
       <div className="relative z-10">
         <div className="flex justify-between items-center mb-4">

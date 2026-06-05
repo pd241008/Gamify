@@ -6,8 +6,8 @@ export default function LandingPage() {
     <div className="min-h-screen bg-black text-white selection:bg-purple-500/30 flex flex-col items-center justify-center">
       <div className="fixed inset-0 z-0">
         <Image
-          src="/esports_hero_bg_1780292991411.png"
-          alt="Abstract Esports Background"
+          src="/bg_gaming_hero.png"
+          alt="Epic Gaming Arena Background"
           fill
           className="object-cover opacity-30"
           priority

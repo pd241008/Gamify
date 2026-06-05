@@ -1,6 +1,12 @@
+'use client';
+
+import { useState } from 'react';
 import MatchCard, { Match } from "./MatchCard";
+import MatchModal from "./MatchModal";
 
 export default function MatchList({ matches }: { matches: Match[] }) {
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+
   if (matches.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10">
@@ -13,10 +19,21 @@ export default function MatchList({ matches }: { matches: Match[] }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {matches.map((match) => (
-        <MatchCard key={match.id} match={match} />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {matches.map((match) => (
+          <MatchCard
+            key={match.id}
+            match={match}
+            onClick={setSelectedMatch}
+          />
+        ))}
+      </div>
+
+      <MatchModal
+        match={selectedMatch}
+        onClose={() => setSelectedMatch(null)}
+      />
+    </>
   );
 }
