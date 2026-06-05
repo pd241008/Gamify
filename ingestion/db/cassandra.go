@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS matches_by_tournament (
     team_a_logo text,
     team_b_logo text,
     videogame text,
+    league_name text,
     PRIMARY KEY (tournament_id, start_time, match_id)
 ) WITH CLUSTERING ORDER BY (start_time ASC);
 `
@@ -62,6 +63,7 @@ func (c *CassandraStore) EnsureSchema() error {
 	_ = c.session.Query(`ALTER TABLE matches_by_tournament ADD team_a_logo text;`).Exec()
 	_ = c.session.Query(`ALTER TABLE matches_by_tournament ADD team_b_logo text;`).Exec()
 	_ = c.session.Query(`ALTER TABLE matches_by_tournament ADD videogame text;`).Exec()
+	_ = c.session.Query(`ALTER TABLE matches_by_tournament ADD league_name text;`).Exec()
 
 	return nil
 }
@@ -74,19 +76,19 @@ func (c *CassandraStore) FetchMatches(tournamentID string) ([]map[string]interfa
 
 	var iter *gocql.Iter
 	if tournamentID != "" {
-		query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo, videogame FROM matches_by_tournament WHERE tournament_id = ?`
+		query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo, videogame, league_name FROM matches_by_tournament WHERE tournament_id = ?`
 		iter = c.session.Query(query, tournamentID).Iter()
 	} else {
 		// LIMIT 50 is used for demonstration, allowing across-partition queries in Astra DB.
-		query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo, videogame FROM matches_by_tournament LIMIT 50`
+		query := `SELECT tournament_id, start_time, match_id, status, score, team_a, team_b, team_a_name, team_b_name, team_a_logo, team_b_logo, videogame, league_name FROM matches_by_tournament LIMIT 50`
 		iter = c.session.Query(query).Iter()
 	}
 
 	var matches []map[string]interface{}
-	var tID, mID, status, score, teamA, teamB, teamAName, teamBName, teamALogo, teamBLogo, videogame string
+	var tID, mID, status, score, teamA, teamB, teamAName, teamBName, teamALogo, teamBLogo, videogame, leagueName string
 	var startTime time.Time
 
-	for iter.Scan(&tID, &startTime, &mID, &status, &score, &teamA, &teamB, &teamAName, &teamBName, &teamALogo, &teamBLogo, &videogame) {
+	for iter.Scan(&tID, &startTime, &mID, &status, &score, &teamA, &teamB, &teamAName, &teamBName, &teamALogo, &teamBLogo, &videogame, &leagueName) {
 		displayTeamA := teamAName
 		displayTeamB := teamBName
 
@@ -95,10 +97,15 @@ func (c *CassandraStore) FetchMatches(tournamentID string) ([]map[string]interfa
 			name = "TBD vs TBD"
 		}
 		
+		displayTournament := leagueName
+		if displayTournament == "" {
+			displayTournament = "Tournament " + tID
+		}
+
 		matches = append(matches, map[string]interface{}{
 			"id":          mID,
 			"name":        name,
-			"tournament":  "Tournament " + tID,
+			"tournament":  displayTournament,
 			"status":      status,
 			"scheduledAt": startTime.Format("2006-01-02T15:04:05Z07:00"),
 			"score":       score,
@@ -128,21 +135,40 @@ func (c *CassandraStore) FetchTournaments() ([]map[string]string, error) {
 		return nil, fmt.Errorf("cassandra session is nil")
 	}
 
+	// Because we can't easily query distinct league_name due to partition key restrictions,
+	// we query all distinct partition keys, then fetch the league name for each.
+	// This is slightly inefficient but perfectly fine for a demo/mock DB.
 	query := `SELECT DISTINCT tournament_id FROM matches_by_tournament`
 	iter := c.session.Query(query).Iter()
 
 	var tournaments []map[string]string
 	var tID string
+	
+	// Create a quick map to avoid duplicates and store names
+	tNames := make(map[string]string)
 
 	for iter.Scan(&tID) {
-		tournaments = append(tournaments, map[string]string{
-			"id":   tID,
-			"name": "Tournament " + tID, // Basic fallback since we don't store tournament_name yet
-		})
+		// Fetch one row from this tournament to get the league_name
+		var leagueName string
+		nameQuery := `SELECT league_name FROM matches_by_tournament WHERE tournament_id = ? LIMIT 1`
+		if err := c.session.Query(nameQuery, tID).Scan(&leagueName); err != nil {
+			leagueName = "Tournament " + tID
+		}
+		if leagueName == "" {
+			leagueName = "Tournament " + tID
+		}
+		tNames[tID] = leagueName
 	}
 
 	if err := iter.Close(); err != nil {
 		return nil, fmt.Errorf("failed to fetch tournaments: %w", err)
+	}
+
+	for id, name := range tNames {
+		tournaments = append(tournaments, map[string]string{
+			"id":   id,
+			"name": name,
+		})
 	}
 
 	return tournaments, nil
