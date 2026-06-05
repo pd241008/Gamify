@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { ClerkProvider, SignInButton, UserButton } from '@clerk/nextjs'
+import { auth } from '@clerk/nextjs/server'
 import Link from "next/link";
 import "./globals.css";
 
@@ -19,11 +20,13 @@ export const metadata: Metadata = {
   description: "Real-time esports match tracking",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { userId } = await auth();
+
   return (
     <ClerkProvider>
       <html
@@ -36,17 +39,18 @@ export default function RootLayout({
               GAMIFY
             </Link>
             <div className="flex items-center gap-4">
-              <SignedIn>
-                <Link href="/settings" className="text-sm font-semibold text-gray-300 hover:text-white transition-colors">
-                  Settings
-                </Link>
-                <UserButton />
-              </SignedIn>
-              <SignedOut>
+              {userId ? (
+                <>
+                  <Link href="/settings" className="text-sm font-semibold text-gray-300 hover:text-white transition-colors">
+                    Settings
+                  </Link>
+                  <UserButton />
+                </>
+              ) : (
                 <div className="px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-500 text-sm font-bold shadow-[0_0_15px_rgba(168,85,247,0.4)] transition-all">
                   <SignInButton mode="modal" />
                 </div>
-              </SignedOut>
+              )}
             </div>
           </nav>
           {children}
