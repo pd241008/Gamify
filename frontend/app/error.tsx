@@ -29,20 +29,7 @@ export default function Error({
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/80 to-black" />
       </div>
 
-      <nav className="relative z-20 border-b border-white/10 bg-black/50 backdrop-blur-md">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="text-xl font-bold tracking-wider text-purple-400 hover:text-purple-300 transition-colors"
-          >
-            GAMIFY
-          </Link>
-          <div className="text-sm flex items-center gap-2 font-medium">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-red-400">System Error</span>
-          </div>
-        </div>
-      </nav>
+
 
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-6">
         <div className="max-w-md w-full rounded-2xl bg-black/40 border border-purple-500/20 backdrop-blur-md p-8 text-center shadow-lg shadow-purple-500/10">
