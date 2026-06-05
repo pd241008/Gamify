@@ -10,6 +10,7 @@ import (
 	"ingestion/internal/qstash"
 	"ingestion/internal/sync"
 	"log"
+	"strings"
 )
 
 func main() {
@@ -100,10 +101,15 @@ func main() {
 				TeamBName:    m.TeamBName,
 				TeamALogo:    m.TeamALogo,
 				TeamBLogo:    m.TeamBLogo,
+				Videogame:    m.Videogame,
 			}
 
-			if _, err := matchBroker.ScheduleMatchNotification(m.ScheduledAt, payload); err != nil {
-				log.Printf("⚠️  Failed to schedule notification for match %d: %v", m.ID, err)
+			if !strings.Contains(cfg.WebhookURL, "localhost") {
+				go func(match parser.Match, p broker.MatchNotificationPayload) {
+					if _, err := matchBroker.ScheduleMatchNotification(match.ScheduledAt, p); err != nil {
+						log.Printf("⚠️  Failed to schedule notification for match %d: %v", match.ID, err)
+					}
+				}(m, payload)
 			}
 		}
 

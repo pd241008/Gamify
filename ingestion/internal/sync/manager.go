@@ -91,7 +91,7 @@ func (m *Manager) startPeriodicCheck() {
 				for _, match := range localMatches {
 					mIDStr := fmt.Sprintf("%d", match.ID)
 					if cMatch, exists := cassandraMatches[mIDStr]; exists {
-						if cMatch.Status != match.Status || cMatch.Score != match.Score {
+						if cMatch.Status != match.Status || cMatch.Score != match.Score || cMatch.Videogame != match.Videogame || cMatch.League.Name != match.League.Name {
 							_ = cStore.UpdateMatch(match)
 						}
 					} else {
