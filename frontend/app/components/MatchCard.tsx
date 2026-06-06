@@ -64,7 +64,7 @@ export default function MatchCard({ match, onClick }: MatchCardProps) {
   return (
     <div
       onClick={() => onClick?.(match)}
-      className="relative group overflow-hidden rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md p-6 hover:border-purple-500/50 transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-purple-500/20 cursor-pointer"
+      className="relative group overflow-hidden rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md p-4 sm:p-6 hover:border-purple-500/50 transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-purple-500/20 cursor-pointer"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(match); }}
@@ -83,18 +83,18 @@ export default function MatchCard({ match, onClick }: MatchCardProps) {
       )}
 
       <div className="relative z-10">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex gap-2 items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 items-center">
             {match.videogame && (
-              <span className="text-xs font-bold uppercase tracking-widest text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded-md border border-cyan-500/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-cyan-400 bg-cyan-500/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md border border-cyan-500/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]">
                 {match.videogame}
               </span>
             )}
-            <span className="text-xs font-semibold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-2 py-1 rounded-md border border-purple-500/20">
+            <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-purple-400 bg-purple-500/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md border border-purple-500/20">
               {match.tournament}
             </span>
           </div>
-          <span className="text-sm text-gray-400 flex items-center gap-2">
+          <span className="text-xs sm:text-sm text-gray-400 flex items-center gap-1.5 sm:gap-2">
             <svg
               className="w-4 h-4"
               fill="none"
@@ -115,32 +115,32 @@ export default function MatchCard({ match, onClick }: MatchCardProps) {
           </span>
         </div>
 
-        <div className="flex items-center justify-between mb-4 mt-8">
+        <div className="flex items-center justify-between mb-4 mt-6 sm:mt-8">
           <div className="flex flex-col items-center flex-1">
-            <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-white/5 bg-gray-900 group-hover:border-cyan-400/50 transition-colors duration-300 flex items-center justify-center">
+            <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-white/5 bg-gray-900 group-hover:border-cyan-400/50 transition-colors duration-300 flex items-center justify-center">
               <TeamLogo
                 src={match.teamA.logoUrl}
                 alt={match.teamA.name}
                 fallbackSrc="/team_logo_alpha_1780293006977.png"
               />
             </div>
-            <span className="mt-3 font-bold text-lg text-white text-center">{match.teamA.name}</span>
+            <span className="mt-2 sm:mt-3 font-bold text-sm sm:text-lg text-white text-center line-clamp-1">{match.teamA.name}</span>
           </div>
 
-          <div className="flex flex-col items-center px-4">
+          <div className="flex flex-col items-center px-2 sm:px-4">
             <span className="text-sm font-bold text-gray-500 mb-1">VS</span>
             <div className="h-[1px] w-12 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           </div>
 
           <div className="flex flex-col items-center flex-1">
-            <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-white/5 bg-gray-900 group-hover:border-fuchsia-400/50 transition-colors duration-300 flex items-center justify-center">
+            <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-white/5 bg-gray-900 group-hover:border-fuchsia-400/50 transition-colors duration-300 flex items-center justify-center">
               <TeamLogo
                 src={match.teamB.logoUrl}
                 alt={match.teamB.name}
                 fallbackSrc="/team_logo_beta_1780293024477.png"
               />
             </div>
-            <span className="mt-3 font-bold text-lg text-white text-center">{match.teamB.name}</span>
+            <span className="mt-2 sm:mt-3 font-bold text-sm sm:text-lg text-white text-center line-clamp-1">{match.teamB.name}</span>
           </div>
         </div>
 

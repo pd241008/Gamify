@@ -32,7 +32,7 @@ export default function Error({
 
 
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-2xl bg-black/40 border border-purple-500/20 backdrop-blur-md p-8 text-center shadow-lg shadow-purple-500/10">
+        <div className="max-w-md w-full rounded-2xl bg-black/40 border border-purple-500/20 backdrop-blur-md p-5 sm:p-8 text-center shadow-lg shadow-purple-500/10">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 mb-6 border border-red-500/20">
             <svg
               className="w-8 h-8 text-red-500"
