@@ -47,6 +47,7 @@ var (
 	manager       *sync.Manager
 	matchBroker   *broker.Broker
 	esportsClient *parser.EsportsParser
+	initialized   bool
 )
 
 func init() {
@@ -55,7 +56,12 @@ func init() {
 	if err != nil {
 		log.Printf("Failed to load configuration: %v", err)
 	}
+}
 
+func lazyInit() {
+	if initialized {
+		return
+	}
 	if cfg != nil {
 		syncCfg := sync.Config{
 			AstraDBToken:  cfg.AstraDBToken,
@@ -75,6 +81,7 @@ func init() {
 		fetcher := parser.NewFetcher(cfg.EsportsAPIBaseURL, cfg.EsportsAPIKey)
 		esportsClient = parser.NewEsportsParser(fetcher)
 	}
+	initialized = true
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -181,6 +188,8 @@ func handleIngest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	lazyInit()
+
 	if esportsClient == nil || manager == nil || matchBroker == nil {
 		http.Error(w, "Pipeline components not initialized properly", http.StatusInternalServerError)
 		return
@@ -266,6 +275,7 @@ func handleMatches(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	lazyInit()
 	if manager == nil {
 		http.Error(w, "Database manager not initialized", http.StatusInternalServerError)
 		return
@@ -291,6 +301,7 @@ func handleTournaments(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	lazyInit()
 	if manager == nil {
 		http.Error(w, "Database manager not initialized", http.StatusInternalServerError)
 		return
@@ -329,6 +340,7 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDebugMatches(w http.ResponseWriter, r *http.Request) {
+	lazyInit()
 	if esportsClient == nil {
 		http.Error(w, "Parser not initialized", http.StatusInternalServerError)
 		return
