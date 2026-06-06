@@ -1,4 +1,4 @@
-package handler
+package main
 
 import (
 	"crypto/ed25519"
@@ -344,5 +344,19 @@ func handleDebugMatches(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(matches); err != nil {
 		log.Printf("Error encoding matches response: %v", err)
+	}
+}
+
+func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	
+	http.HandleFunc("/", Handler)
+	
+	log.Printf("Starting ingestion API locally on port %s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatalf("Server failed: %v", err)
 	}
 }
