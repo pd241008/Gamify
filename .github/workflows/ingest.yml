@@ -12,5 +12,5 @@ jobs:
       - name: Invoke Ingestion Endpoint
         run: |
           curl -X POST https://${{ secrets.VERCEL_BACKEND_DOMAIN }}/api/ingest \
-          -H "Authorization: Bearer ${{ secrets.INGESTION_SECRET_KEY }}" \
+          -H 'Authorization: Bearer ${{ secrets.INGESTION_SECRET_KEY }}' \
           -d '{"action": "sync"}'
