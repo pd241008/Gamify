@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider, SignInButton, UserButton } from '@clerk/nextjs'
 import { auth } from '@clerk/nextjs/server'
 import Link from "next/link";
+import Footer from "./components/Footer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,11 +35,11 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col bg-black text-white">
-          <nav className="fixed top-0 left-0 right-0 z-50 p-4 flex justify-between items-center bg-black/50 backdrop-blur-md border-b border-white/10">
-            <Link href="/" className="text-xl font-bold tracking-wider text-purple-400 hover:text-purple-300 transition-colors">
+          <nav className="fixed top-0 left-0 right-0 z-50 px-3 py-3 sm:px-4 sm:py-4 flex justify-between items-center bg-black/50 backdrop-blur-md border-b border-white/10">
+            <Link href="/" className="text-lg sm:text-xl font-bold tracking-wider text-purple-400 hover:text-purple-300 transition-colors">
               GAMIFY
             </Link>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {userId ? (
                 <>
                   <Link href="/settings" className="text-sm font-semibold text-gray-300 hover:text-white transition-colors">
@@ -54,6 +55,7 @@ export default async function RootLayout({
             </div>
           </nav>
           {children}
+          <Footer />
         </body>
       </html>
     </ClerkProvider>

@@ -199,9 +199,9 @@ export default function MatchModal({ match, onClose }: MatchModalProps) {
           </svg>
         </button>
 
-        <div className="p-8">
+        <div className="p-4 sm:p-6 md:p-8">
           {/* Game & Tournament tags */}
-          <div className="flex gap-2 mb-6">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4 sm:mb-6">
             {match.videogame && (
               <span className="text-xs font-bold uppercase tracking-widest text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded-md border border-cyan-500/20">
                 {match.videogame}
@@ -213,9 +213,9 @@ export default function MatchModal({ match, onClose }: MatchModalProps) {
           </div>
 
           {/* Teams */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="flex flex-col items-center flex-1">
-              <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-cyan-400/30 bg-gray-900 flex items-center justify-center">
+              <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-cyan-400/30 bg-gray-900 flex items-center justify-center">
                 <ModalTeamLogo
                   src={match.teamA.logoUrl}
                   alt={match.teamA.name}
@@ -225,12 +225,12 @@ export default function MatchModal({ match, onClose }: MatchModalProps) {
               <span className="mt-2 font-bold text-white text-center text-sm">{match.teamA.name}</span>
             </div>
 
-            <div className="flex flex-col items-center px-6">
+            <div className="flex flex-col items-center px-3 sm:px-6">
               <span className="text-2xl font-black text-gray-500">VS</span>
             </div>
 
             <div className="flex flex-col items-center flex-1">
-              <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-fuchsia-400/30 bg-gray-900 flex items-center justify-center">
+              <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-fuchsia-400/30 bg-gray-900 flex items-center justify-center">
                 <ModalTeamLogo
                   src={match.teamB.logoUrl}
                   alt={match.teamB.name}
@@ -242,7 +242,7 @@ export default function MatchModal({ match, onClose }: MatchModalProps) {
           </div>
 
           {/* Schedule */}
-          <div className="flex items-center gap-3 mb-8 p-3 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8 p-2.5 sm:p-3 rounded-xl bg-white/5 border border-white/10">
             <svg className="w-5 h-5 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
@@ -274,7 +274,7 @@ export default function MatchModal({ match, onClose }: MatchModalProps) {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {REMINDER_OPTIONS.map((option) => (
                 <button
                   key={option.minutes}
