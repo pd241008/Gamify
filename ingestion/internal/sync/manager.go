@@ -74,13 +74,13 @@ func (m *Manager) startPeriodicCheck() {
 			}
 
 			log.Println("🔄 Astra DB is back online! Synchronizing local data to Astra...")
-			
+
 			// Get all tournaments in local
 			tournaments, _ := m.localStore.FetchTournaments()
 			for _, t := range tournaments {
 				tID := t["id"]
 				localMatches, _ := m.localStore.FetchExistingMatches(tID)
-				
+
 				// Fetch existing in cassandra to do delta sync
 				cassandraMatches, err := cStore.FetchExistingMatches(tID)
 				if err != nil {

@@ -47,11 +47,10 @@ var required = []string{
 // It first attempts to load a .env file from the project root (for local dev),
 // then reads all required env vars. Returns an error if any required var is missing.
 func Load() (*Config, error) {
-	
-	loadEnvFile("../.env") 
-	loadEnvFile(".env")       
 
-	
+	loadEnvFile("../.env")
+	loadEnvFile(".env")
+
 	var missing []string
 	for _, key := range required {
 		if getEnv(key) == "" {
@@ -79,7 +78,6 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-
 func getEnv(key string) string {
 	val := os.Getenv(key)
 	// Strip surrounding double quotes if present.
@@ -91,7 +89,7 @@ func getEnv(key string) string {
 
 // loadEnvFile reads a .env file and sets environment variables that
 // are not already set in the environment. This ensures that explicitly
-// set env vars (e.g., from GitHub Actions) always take precedence.``
+// set env vars (e.g., from GitHub Actions) always take precedence.“
 func loadEnvFile(path string) {
 	file, err := os.Open(path)
 	if err != nil {

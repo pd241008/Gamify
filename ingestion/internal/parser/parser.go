@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-
 type Match struct {
 	ID           int       `json:"id"`
 	TournamentID int       `json:"tournament_id"`
@@ -34,7 +33,7 @@ type rawMatch struct {
 	Videogame    struct {
 		Name string `json:"name"`
 	} `json:"videogame"`
-	Opponents    []struct {
+	Opponents []struct {
 		Opponent struct {
 			ID       int    `json:"id"`
 			Name     string `json:"name"`
@@ -73,18 +72,15 @@ func (m *Match) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-
 type League struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
-
 type MatchProvider interface {
 	GetUpcomingMatches() ([]Match, error)
 	GetRunningMatches() ([]Match, error)
 }
-
 
 type EsportsParser struct {
 	fetcher *Fetcher
@@ -109,7 +105,6 @@ func (p *EsportsParser) GetUpcomingMatches() ([]Match, error) {
 
 	return matches, nil
 }
-
 
 func (p *EsportsParser) GetRunningMatches() ([]Match, error) {
 	var matches []Match

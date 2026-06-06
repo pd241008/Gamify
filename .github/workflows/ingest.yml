@@ -1,0 +1,16 @@
+name: Scheduled Data Ingestion
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Executes every 15 minutes
+  workflow_dispatch: # Allows manual triggering from the UI
+
+jobs:
+  trigger-ingestion:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invoke Ingestion Endpoint
+        run: |
+          curl -X POST https://${{ secrets.VERCEL_BACKEND_DOMAIN }}/api/ingest \
+          -H "Authorization: Bearer ${{ secrets.INGESTION_SECRET_KEY }}" \
+          -d '{"action": "sync"}'

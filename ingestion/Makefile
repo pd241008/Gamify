@@ -4,7 +4,7 @@
 BIN_NAME = ingest-bin
 
 # Build directory
-CMD_DIR = ./cmd/ingestion
+CMD_DIR = ./api
 
 # .env file path (relative to project root)
 ENV_FILE = ../.env
