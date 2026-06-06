@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"ingestion/internal/astra"
-	"ingestion/internal/config"
+	"ingestion/pkg/astra"
+	"ingestion/pkg/config"
 	"log"
 )
 

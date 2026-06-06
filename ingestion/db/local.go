@@ -3,7 +3,7 @@ package db
 import (
 	"encoding/json"
 	"fmt"
-	"ingestion/internal/parser"
+	"ingestion/pkg/parser"
 	"os"
 	"sync"
 )

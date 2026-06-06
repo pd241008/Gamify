@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"ingestion/internal/parser"
+	"ingestion/pkg/parser"
 	"time"
 )
 

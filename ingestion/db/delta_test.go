@@ -1,7 +1,7 @@
 package db
 
 import (
-	"ingestion/internal/parser"
+	"ingestion/pkg/parser"
 	"testing"
 	"time"
 )
