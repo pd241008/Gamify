@@ -3,7 +3,7 @@ package sync
 import (
 	"fmt"
 	"ingestion/db"
-	"ingestion/internal/astra"
+	"ingestion/pkg/astra"
 	"log"
 	"sync"
 	"time"

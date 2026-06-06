@@ -1,7 +1,7 @@
 package db
 
 import (
-	"ingestion/internal/parser"
+	"ingestion/pkg/parser"
 )
 
 // Store defines the interface for database operations so we can hot-swap between Cassandra and a Local mock DB.

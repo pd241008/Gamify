@@ -2,7 +2,7 @@ package broker
 
 import (
 	"fmt"
-	"ingestion/internal/qstash"
+	"ingestion/pkg/qstash"
 	"log"
 	"time"
 )

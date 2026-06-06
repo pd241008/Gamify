@@ -13,11 +13,11 @@ import (
 
 	"ingestion/broker"
 	"ingestion/db"
-	internalastra "ingestion/internal/astra"
-	"ingestion/internal/config"
-	"ingestion/internal/parser"
-	"ingestion/internal/qstash"
-	"ingestion/internal/sync"
+	internalastra "ingestion/pkg/astra"
+	"ingestion/pkg/config"
+	"ingestion/pkg/parser"
+	"ingestion/pkg/qstash"
+	"ingestion/pkg/sync"
 )
 
 // Discord Interaction Types
