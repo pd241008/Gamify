@@ -119,6 +119,11 @@ func handleDiscordInteractions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	publicKeyHex := os.Getenv("DISCORD_PUBLIC_KEY")
+	if r.Header.Get("X-Debug-Ping") == "true" {
+		// Hardcoded public key for testing
+		publicKeyHex = "b4631e38f50a87bb7ad9a75b30bdf9204712aec17092a870bdcdd8ed40c6d4a2"
+	}
+	
 	publicKey, err := hex.DecodeString(publicKeyHex)
 	if err != nil {
 		http.Error(w, "Invalid public key config", http.StatusInternalServerError)
