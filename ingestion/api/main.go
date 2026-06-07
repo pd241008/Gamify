@@ -129,13 +129,13 @@ func handleDiscordInteractions(w http.ResponseWriter, r *http.Request) {
 	timestamp := r.Header.Get("X-Signature-Timestamp")
 
 	if signatureHex == "" || timestamp == "" {
-		http.Error(w, "Missing signatures", http.StatusUnauthorized)
+		http.Error(w, "Missing signatures. Configured PubKey Starts With: "+publicKeyHex[:6], http.StatusUnauthorized)
 		return
 	}
 
 	signature, err := hex.DecodeString(signatureHex)
 	if err != nil {
-		http.Error(w, "Invalid signature format", http.StatusBadRequest)
+		http.Error(w, "Invalid signature format. Configured PubKey Starts With: "+publicKeyHex[:6], http.StatusBadRequest)
 		return
 	}
 
@@ -147,7 +147,7 @@ func handleDiscordInteractions(w http.ResponseWriter, r *http.Request) {
 
 	verified := ed25519.Verify(publicKey, append([]byte(timestamp), body...), signature)
 	if !verified {
-		http.Error(w, "Invalid request signature", http.StatusUnauthorized)
+		http.Error(w, "Invalid request signature. Configured PubKey Starts With: "+publicKeyHex[:6], http.StatusUnauthorized)
 		return
 	}
 
