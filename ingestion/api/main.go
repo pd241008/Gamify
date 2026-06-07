@@ -113,47 +113,41 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDiscordInteractions(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	publicKeyHex := os.Getenv("DISCORD_PUBLIC_KEY")
 	publicKey, err := hex.DecodeString(publicKeyHex)
 	if err != nil {
-		http.Error(w, "Invalid public key config", http.StatusInternalServerError)
+		http.Error(w, "invalid public key", http.StatusInternalServerError)
 		return
 	}
 
 	signatureHex := r.Header.Get("X-Signature-Ed25519")
 	timestamp := r.Header.Get("X-Signature-Timestamp")
-
 	if signatureHex == "" || timestamp == "" {
-		http.Error(w, "Missing signatures. Configured PubKey Starts With: "+publicKeyHex[:6], http.StatusUnauthorized)
+		http.Error(w, "missing signature", http.StatusUnauthorized)
 		return
 	}
 
 	signature, err := hex.DecodeString(signatureHex)
 	if err != nil {
-		http.Error(w, "Invalid signature format. Configured PubKey Starts With: "+publicKeyHex[:6], http.StatusBadRequest)
+		http.Error(w, "invalid signature format", http.StatusUnauthorized)
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, "Cannot read body", http.StatusInternalServerError)
+		http.Error(w, "cannot read body", http.StatusInternalServerError)
 		return
 	}
 
-	verified := ed25519.Verify(publicKey, append([]byte(timestamp), body...), signature)
-	if !verified {
-		http.Error(w, "Invalid request signature. Configured PubKey Starts With: "+publicKeyHex[:6], http.StatusUnauthorized)
+	if !ed25519.Verify(publicKey, append([]byte(timestamp), body...), signature) {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("invalid request signature"))
 		return
 	}
 
 	var interaction DiscordInteraction
 	if err := json.Unmarshal(body, &interaction); err != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
 
@@ -163,12 +157,8 @@ func handleDiscordInteractions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if interaction.Type == InteractionTypeApplicationCommand {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(DiscordResponse{Type: InteractionResponseDeferredChannelMessage})
-		go processAnalytics(interaction.Token, interaction.Data)
-		return
-	}
+	// For now, handle other types minimally
+	w.WriteHeader(http.StatusOK)
 }
 
 func processAnalytics(token string, data json.RawMessage) {
