@@ -157,6 +157,13 @@ func handleDiscordInteractions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if interaction.Type == InteractionTypeApplicationCommand {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(DiscordResponse{Type: InteractionResponseDeferredChannelMessage})
+		go processAnalytics(interaction.Token, interaction.Data)
+		return
+	}
+
 	// For now, handle other types minimally
 	w.WriteHeader(http.StatusOK)
 }
